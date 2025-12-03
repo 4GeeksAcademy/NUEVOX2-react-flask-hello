@@ -1,5 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask import Flask
+from flask import Admin
+
+from flask import SQLAlchemy
+from flask import UserMixin
 from app import db, login_manager
 
 

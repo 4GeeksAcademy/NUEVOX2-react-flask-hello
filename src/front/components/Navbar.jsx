@@ -18,8 +18,8 @@ export const Navbar = () => {
 			className="navbar navbar-expand-lg"
 			style={{
 				background: "linear-gradient(90deg, #d42424, #3b4cca)",
-				padding: "12px 20px",
-				boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)"
+				boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+				
 			}}
 		>
 			<div className="container-fluid">
@@ -65,7 +65,6 @@ export const Navbar = () => {
 					)}
 				</div>
 
-			</div>
-		</nav>
+			</div></nav>
 	);
 };

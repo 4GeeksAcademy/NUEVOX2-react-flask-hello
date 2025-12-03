@@ -1,8 +1,15 @@
+from flask import Flask
+from flask_admin import Admin
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import login_required
+
+app = Flask(__name__)
+
 @app.route('/search_pokemon', methods=['GET'])
 @login_required
 def search_pokemon():
     name = request.args.get('name')
-    response = requests.get(
+    response = request.get(
         f'https://pokeapi.co/api/v2/pokemon/{name.lower()}')
     if response.status_code == 200:
         data = response.json()
