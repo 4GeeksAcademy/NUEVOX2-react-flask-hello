@@ -1,18 +1,27 @@
-from models import User, Pokemon
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from config import Config
 from forms import RegistrationForm, LoginForm, PokemonForm
-import requests
+from src.api.models import db, User, Pokemon
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-db = SQLAlchemy(app)
+
+db.init.app(app)
+
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 # ---- RUTAS ----
@@ -27,21 +36,37 @@ def home():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
+
+        existing = User.query.filter_by(email=form.email.data).first()
+        if existing:
+            flash("Este email ya está registrado.", "danger")
+            return redirect(url_for("register"))
+        
+
         hashed_pw = generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data,
-                        email=form.email.data, password=hashed_pw)
+        new_user = User(
+            username=form.username.data,
+            email=form.email.data, 
+            password=hashed_pw
+            )
         db.session.add(new_user)
         db.session.commit()
+
+
         flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
         return redirect(url_for('login'))
+    
     return render_template('register.html', form=form)
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        
         user = User.query.filter_by(email=form.email.data).first()
+        
         if user and check_password_hash(user.password, form.password.data):
             login_user(user)
             flash('Inicio de sesión exitoso.', 'success')
@@ -86,8 +111,11 @@ def add_pokemon():
         )
         db.session.add(new_pokemon)
         db.session.commit()
+
+
         flash('Pokémon agregado.', 'success')
         return redirect(url_for('pokedex'))
+    
     return render_template('add_pokemon.html', form=form)
 
 
