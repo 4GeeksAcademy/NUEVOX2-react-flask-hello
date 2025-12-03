@@ -1,72 +1,97 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
-import os
-from flask import Flask, request, jsonify, url_for, send_from_directory
-from flask_migrate import Migrate
-from flask_swagger import swagger
-from api.utils import APIException, generate_sitemap
-from api.models import db
-from api.routes import api
-from api.admin import setup_admin
-from api.commands import setup_commands
+from models import User, Pokemon
+from flask import Flask, render_template, redirect, url_for, flash, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from config import Config
+from forms import RegistrationForm, LoginForm, PokemonForm
+import requests
 
-# from models import Person
-
-ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-static_file_dir = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)), '../dist/')
 app = Flask(__name__)
-app.url_map.strict_slashes = False
+app.config.from_object(Config)
 
-# database condiguration
-db_url = os.getenv("DATABASE_URL")
-if db_url is not None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
-        "postgres://", "postgresql://")
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-MIGRATE = Migrate(app, db, compare_type=True)
-db.init_app(app)
-
-# add the admin
-setup_admin(app)
-
-# add the admin
-setup_commands(app)
-
-# Add all endpoints form the API with a "api" prefix
-app.register_blueprint(api, url_prefix='/api')
-
-# Handle/serialize errors like a JSON object
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 
-@app.errorhandler(APIException)
-def handle_invalid_usage(error):
-    return jsonify(error.to_dict()), error.status_code
-
-# generate sitemap with all your endpoints
+# ---- RUTAS ----
 
 
 @app.route('/')
-def sitemap():
-    if ENV == "development":
-        return generate_sitemap(app)
-    return send_from_directory(static_file_dir, 'index.html')
-
-# any other endpoint will try to serve it like a static file
-@app.route('/<path:path>', methods=['GET'])
-def serve_any_other_file(path):
-    if not os.path.isfile(os.path.join(static_file_dir, path)):
-        path = 'index.html'
-    response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0  # avoid cache memory
-    return response
+def home():
+    return render_template('home.html')
 
 
-# this only runs if `$ python src/main.py` is executed
-if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3001))
-    app.run(host='0.0.0.0', port=PORT, debug=True)
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        hashed_pw = generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data,
+                        email=form.email.data, password=hashed_pw)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user)
+            flash('Inicio de sesión exitoso.', 'success')
+            return redirect(url_for('pokedex'))
+        else:
+            flash('Email o contraseña incorrectos.', 'danger')
+    return render_template('login.html', form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Has cerrado sesión.', 'info')
+    return redirect(url_for('home'))
+
+
+@app.route('/pokedex')
+@login_required
+def pokedex():
+    pokemons = Pokemon.query.all()
+    return render_template('pokedex.html', pokemons=pokemons)
+
+
+@app.route('/pokemon/<int:pokemon_id>')
+@login_required
+def pokemon_detail(pokemon_id):
+    pokemon = Pokemon.query.get_or_404(pokemon_id)
+    return render_template('pokemon_detail.html', pokemon=pokemon)
+
+
+@app.route('/add_pokemon', methods=['GET', 'POST'])
+@login_required
+def add_pokemon():
+    form = PokemonForm()
+    if form.validate_on_submit():
+        new_pokemon = Pokemon(
+            name=form.name.data,
+            type=form.type.data,
+            description=form.description.data,
+            image_url=form.image_url.data
+        )
+        db.session.add(new_pokemon)
+        db.session.commit()
+        flash('Pokémon agregado.', 'success')
+        return redirect(url_for('pokedex'))
+    return render_template('add_pokemon.html', form=form)
+
+
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
