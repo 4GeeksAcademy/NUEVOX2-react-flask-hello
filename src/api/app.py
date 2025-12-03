@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from config import Config
+from api.config import Config
 from forms import RegistrationForm, LoginForm, PokemonForm
 from src.api.models import db, User, Pokemon
 
