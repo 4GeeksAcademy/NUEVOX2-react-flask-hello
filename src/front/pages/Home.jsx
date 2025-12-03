@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-/*import "bootstrap/dist/css/bootstrap.min.css";*/
+
 
 
 
@@ -13,15 +13,17 @@ export function Home() {
 			className="w-100 d-flex flex-column justify-content-center align-items-center"
 			style={{
 				minHeight: "100vh",
-				background: "linear-gradient(135deg, #ffcb05, #3b4cca)",
-				padding: "40px",
+				background: "linear-gradient(135deg, #bc2626ff, #3b4cca)",
+				backgroundSize: "cover, auto",
 				color: "white",
-				textAlign: "center"
+				
+	
+
 			}}
 		>
 			{/* Logo / Imagen */}
 			<img
-				src="file:///C:/Users/fer-o/OneDrive/Escritorio/30-309982_19-pokeball-picture-freeuse-stock-ball-pokemon-huge.png"
+				src="https://www.pngkey.com/png/full/30-309982_19-pokeball-picture-freeuse-stock-ball-pokemon-huge.png"
 				alt="Poke Ball"
 				className="mb-4"
 				style={{ width: "120px" }}
@@ -36,12 +38,12 @@ export function Home() {
 				para consultar información sobre las diferentes especies que encuentran durante su viaje.
 			</p>
 
-			<img
+			{/*<img
 				src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
 				alt="Pikachu"
 				className="mb-4"
-				style={{ width: "100px" }}
-			/>
+				
+			/>*/}
 
 			<button
 				onClick={() => navigate("/login")}

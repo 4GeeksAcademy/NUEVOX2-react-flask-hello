@@ -92,7 +92,7 @@ export const Login = () => {
             className="d-flex justify-content-center align-items-center"
             style={{
                 minHeight: "100vh",
-                background: "linear-gradient(135deg, #3b4cca, #ffcb05)",
+                background: "linear-gradient(135deg, #3b4cca,  #bc2626ff)",
                 padding: "20px"
             }}
         >
@@ -107,7 +107,7 @@ export const Login = () => {
                 {/* LOGO */}
                 <div className="text-center mb-3">
                     <img
-                        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png"
+                        src="https://www.pngkey.com/png/full/30-309982_19-pokeball-picture-freeuse-stock-ball-pokemon-huge.png"
                         alt="Master Ball"
                         style={{ width: "80px" }}
                     />
@@ -192,7 +192,7 @@ export const Login = () => {
                     </span>
                 </p>
 
-                {/* RESET PASSWORD */}
+                {/* RESET PASSWORD 
                 <p className="text-center mt-2">
                     <span
                         className="text-secondary"
@@ -201,7 +201,7 @@ export const Login = () => {
                     >
                         ¿Olvidaste tu contraseña?
                     </span>
-                </p>
+                </p>*/}
             </div>
         </div>
     );
