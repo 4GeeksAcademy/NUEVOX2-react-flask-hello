@@ -11,7 +11,7 @@ db = SQLAlchemy()
 class User(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(Stting(120), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(120), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     favorites: Mapped[list["Favorite"]] = relationship(back_populates='user', cascade='all, delete-orphan')
@@ -24,3 +24,5 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+class Pokemon(db.Model):
+    id: Mapped[int]
