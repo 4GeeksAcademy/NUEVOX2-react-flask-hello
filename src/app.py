@@ -1,19 +1,17 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from api.config import Config
-from api.forms import RegistrationForm, LoginForm, PokemonForm
 from api.models import db, User, Pokemon
+from api.forms import RegistrationForm, LoginForm, PokemonForm
+from api.config import Config
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask import Flask, render_template, redirect, url_for, flash, request
+from dotenv import load_dotenv
+load_dotenv()
 
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-
 db.init_app(app)
-
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -28,8 +26,17 @@ def load_user(user_id):
 
 
 @app.route('/')
-def home():
-    return render_template('home.html')
+def api_info():
+    return {
+        'status': 'ok',
+        'message': 'Backend API is running',
+        'version': '1.0.0'
+    }
+
+
+@app.route('/api/health')
+def health():
+    return {'status': 'ok', 'message': 'Backend is running'}
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -41,32 +48,29 @@ def register():
         if existing:
             flash("Este email ya está registrado.", "danger")
             return redirect(url_for("register"))
-        
 
         hashed_pw = generate_password_hash(form.password.data)
         new_user = User(
             username=form.username.data,
-            email=form.email.data, 
+            email=form.email.data,
             password=hashed_pw
-            )
+        )
         db.session.add(new_user)
         db.session.commit()
 
-
         flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
         return redirect(url_for('login'))
-    
-    return render_template('register.html', form=form)
 
+    return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        
+
         user = User.query.filter_by(email=form.email.data).first()
-        
+
         if user and check_password_hash(user.password, form.password.data):
             login_user(user)
             flash('Inicio de sesión exitoso.', 'success')
@@ -112,10 +116,9 @@ def add_pokemon():
         db.session.add(new_pokemon)
         db.session.commit()
 
-
         flash('Pokémon agregado.', 'success')
         return redirect(url_for('pokedex'))
-    
+
     return render_template('add_pokemon.html', form=form)
 
 
