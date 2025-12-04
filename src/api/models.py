@@ -28,7 +28,7 @@ class Pokemon(db.Model):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     type: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    image_url = Mapped[str | None] = mapped_column(String(200), nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     def __repr__(self):
         return f"<Pokemon {self.name}>"
